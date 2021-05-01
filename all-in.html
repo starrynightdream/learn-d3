@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>测试用</title>
+
+        <script type="text/javascript" src="./node_modules/d3/dist/d3.js"></script>
+    </head>
+    <body>
+        <div id = "svgcontainer">
+        </div>
+        <script language = "javascript">
+            var width = 300;
+            var height = 300;
+            var svg = d3.select("#svgcontainer")
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height);
+            svg.append("line")
+                .attr("x1", 100)
+                .attr("y1", 100)
+                .attr("x2", 200)
+                .attr("y2", 200)
+                .style("stroke", "rgb(255,0,0)")
+                .style("stroke-width", 2);
+        </script>
+    </body>
+</html>
