@@ -1,0 +1,59 @@
+.has_center_box {
+    display: flex;
+    display: -webkit-flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+
+    border: none;
+}
+
+.has_center_box .top{
+    width: 100%;
+    height: 20vh;
+    border: none;
+}
+
+.has_center_box .buttom{
+    width: 100%;
+    height: 20vh;
+    border: none;
+}
+
+.has_center_box .midd{
+    width: 100%;
+    height: 60vh;
+    border: none;
+
+    display: flex;
+    display: -webkit-flex;
+    flex-flow: row nowrap;
+    justify-self: center;
+    align-items: center;
+    align-content: center;
+}
+
+.has_center_box .midd .left{
+    width: 20vw;
+    border: none;
+}
+
+.has_center_box .midd .right{
+    width: 20vw;
+    border: none;
+}
+
+.has_center_box .midd .center{
+    width: 60vw;
+    height: 100%;
+    border: none;
+}
+
+.make_item_center{
+    display: flex;
+    display: -webkit-flex;
+
+    justify-content: center;
+    align-items: center;
+}
