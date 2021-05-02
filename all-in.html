@@ -5,8 +5,10 @@
         <title>测试用</title>
 
         <script type="text/javascript" src="./node_modules/d3/dist/d3.js"></script>
+        <script type="text/javascript" src="./node_modules/d3-transition/dist/d3-transition.js"></script>
     </head>
     <body>
+        <h1 id="text">A</h1>
         <div id = "svgcontainer">
         </div>
         <script language = "javascript">
@@ -16,13 +18,27 @@
                 .append("svg")
                 .attr("width", width)
                 .attr("height", height);
+
             svg.append("line")
                 .attr("x1", 100)
                 .attr("y1", 100)
                 .attr("x2", 200)
                 .attr("y2", 200)
+                .attr("transform", "translate(10, -10)")
                 .style("stroke", "rgb(255,0,0)")
                 .style("stroke-width", 2);
-        </script>
+
+            d3.select('body')
+                .transition(d3.transition().duration(2000))
+                .style('background-color', 'lightblue')
+                .transition(d3.transition().duration(2000))
+                .style('background-color', 'gray');
+
+            d3.select('#text')
+                .transition(d3.transition().duration(2000))
+                .style('color', 'red')
+                .transition(d3.transition().duration(2000))
+                .style('color', 'white')
+        </script> 
     </body>
 </html>
