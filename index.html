@@ -5,22 +5,29 @@
         <title>主界面测试</title>
 
         <link type="text/css" rel="stylesheet" href="/css/g.css" />
+        <link type="text/css" rel="stylesheet" href="/css/svgPart.css" />
 
         <script type="text/javascript" src="/node_modules/d3/dist/d3.js"></script>
         <script type="text/javascript" src="/node_modules/d3-transition/dist/d3-transition.js"></script>
 
+        <script type="text/javascript" src="/node_modules/vue/dist/vue.js"></script>
+        <script type="text/javascript" src="/node_modules/vue-resource/dist/vue-resource.js"></script>
+
         <script type="text/javascript" src="/js/show_data.js"></script>
+        <!-- <script type="text/javascript" src="/js/showWIthVue.js"></script> -->
     </head>
-    <body class="has_center_box">
-        <div class="top make_item_center">
-            <input type="text" name="search" id="search" />
-        </div>
-        <div class="midd">
-            <div id="left_tol_part" class="left"></div>
-            <div id="draw_svg" class="center">
+    <body>
+        <div id="main" class="has_center_box">
+            <div class="top make_item_center">
+                <input type="text" name="search" id="search" />
             </div>
-            <div id="right_tol_part" class="right"></div>
-        </div>
-        <div class="buttom"></div>
+            <div class="midd">
+                <div id="left_tol_part" class="left"></div>
+                <div id="draw_svg" class="center">
+                </div>
+                <div id="right_tol_part" class="right"></div>
+            </div>
+            <div class="buttom"></div>
+        </div> 
     </body>
 </html>

@@ -24,6 +24,9 @@ const minColorChange = 16;
 const offsetX = 250;
 const offsetY = 200;
 
+const textOffsetX = 10;
+const textOffsetY = 10;
+
 /**
  * 对dataGet 获取的数据进行适应性修正
  */
@@ -92,23 +95,62 @@ showData = () =>{
     const data = getData();
     const targetFilter = getCirData(data.length);
 
-    d3.select('svg').selectAll('circle')
+    // 线
+    d3.select('svg').selectAll('line')
         .data(targetFilter)
         .enter()
-        .append('circle')
+        .append('line')
+        .attr('x1', offsetX)
+        .attr('y1', offsetY)
+        .attr('x2', offsetX)
+        .attr('y2', offsetY)
+        .style('stroke-width', 2)
+        .style('stroke', d3.rgb(200, 200, 200))
+        .transition(d3.transition().duration(2000))
+        .attr('x2', (d)=>{return d.x + offsetX;})
+        .attr('y2', (d)=>{return d.y + offsetY;})
+  
+    const gSet = d3.select('svg').selectAll('g')
+        .data(targetFilter)
+        .enter()
+        .append('g');
+
+      
+    // 小圆点
+    gSet.append('circle')
+        .attr('cx', (d)=>{return offsetX;})
+        .attr('cy', (d)=>{return offsetY;})
+        .attr('stroke', 'black')
+        .attr('stroke-width', 1)
+        .transition(d3.transition().duration(2000)) 
         .attr('cx', (d)=>{return d.x + offsetX;})
         .attr('cy', (d)=>{return d.y + offsetY;})
         .attr('r', (d)=>{return d.r;})
         .attr('fill', (d)=>{return d.color});
 
-    d3.select('svg').selectAll('text')
-        .data(targetFilter)
-        .enter()
-        .append('text')
-        .attr('x', (d)=>{return d.x + offsetX;})
-        .attr('y', (d)=>{return d.y + offsetY;})
-        .text((d, i)=>{return data[i];})
 
+    // 文字
+    gSet.append('text')
+        .attr('x', (d)=>{return offsetX;})
+        .attr('y', (d)=>{return offsetY;})
+        .transition(d3.transition().duration(2000))
+        .attr('x', (d)=>{return d.x + textOffsetX + offsetX;})
+        .attr('y', (d)=>{return d.y + textOffsetY + offsetY;})
+        .text((d, i)=>{return data[i];})
+    
+    const gs = document.getElementsByTagName('circle');
+    for (let i=0; i< gs.length; ++i) {
+        gs.item(i).addEventListener('click', (e) =>{
+            console.log(e);
+        });
+    }
+
+    // console.log(gs);
+    // gs.forEach(obj => {
+    //     obj.addEventListener('click', (e) =>{
+    //         console.log('a');
+    //     });
+    // });
 }
 
 
