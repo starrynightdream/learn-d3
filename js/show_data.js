@@ -10,9 +10,20 @@
 const test_data = [];
 
 // 设置参数
+const cirCount = 12; // 最内部一圈放多少
 const cirR = 10; // 小圆点半径
+const cirDis = 80; // 小圆点圆心的距离
 const minRLim = 50; // 小圆围成的半径的最小值
 const normalRLim = 150; // 希望一行时小圆围成的半径值
+const minLayerDis = 30; // 最小层间距
+const normalLayerDis = 200; // 希望两行之间距离的最大值
+
+
+const minColorChange = 16; 
+
+const offsetX = 250;
+const offsetY = 200;
+
 /**
  * 对dataGet 获取的数据进行适应性修正
  */
@@ -30,29 +41,48 @@ getData= () =>{
 }
 
 /**
+ * 推测应该有多少行存在
+ */
+gassLayer = (len)=>{
+    return (len /10) +1;
+}
+
+
+/**
  * 根据总数据量获取
  * 绘制下标，绘制颜色
  * 等数据的列表
  */
 getCirData = (len) =>{
-    let baseR = normalRLim / (Math.floor(len / 10) + 1);
-    baseR = Math.max(baseR, minRLim);
-    let perColor = Math.floor( 0xffffff / len);
+    let layNum = gassLayer(len);
+    let baseR = normalRLim / layNum;
+    baseR = Math.max(minRLim, baseR);
+    let distR = normalLayerDis / layNum;
+    distR = Math.max(minLayerDis, distR);
+
     const ans = [];
 
-    for (let idx = 0; idx < len; ++idx) {
-        let r = Math.floor(idx / 12) * 30 + baseR;
-        let deg = idx % 12 * 30;
-        deg = Math.PI * (deg / 180);
+    let r = baseR;
+    for (let idx=0;idx < len; ++idx) {
+        let count = Math.floor(2 * Math.PI / Math.asin(cirDis / 2 / r));
+        count = Math.min(count, len - idx);
+        let perDeg = Math.PI * 2 / count;
+        let offset = Math.random() * 360;
+        for (let inner =0; inner<count; ++inner, ++idx) {
+            let deg = perDeg * inner;
+            let x = Math.sin(deg) * r;
+            let y = Math.cos(deg) * r;
+            let color = d3.hsl(deg /Math.PI * 180 + offset, 1, 0.5);
 
-        let x = r * Math.sin(deg);
-        let y = r * Math.cos(deg);
-        let color = perColor * idx;
-
-        ans.push({x, y, r: cirR, color});
+            ans.push({
+                x, y, r : cirR, color
+            });
+        }
+        r += distR;
     }
 
     return ans;
+
 }
 
 /**
@@ -66,10 +96,18 @@ showData = () =>{
         .data(targetFilter)
         .enter()
         .append('circle')
-        .attr('cx', (d)=>{return d.x + 100;})
-        .attr('cy', (d)=>{return d.y + 100;})
+        .attr('cx', (d)=>{return d.x + offsetX;})
+        .attr('cy', (d)=>{return d.y + offsetY;})
         .attr('r', (d)=>{return d.r;})
-        .attr('fill', (d)=>{return d.color;})
+        .attr('fill', (d)=>{return d.color});
+
+    d3.select('svg').selectAll('text')
+        .data(targetFilter)
+        .enter()
+        .append('text')
+        .attr('x', (d)=>{return d.x + offsetX;})
+        .attr('y', (d)=>{return d.y + offsetY;})
+        .text((d, i)=>{return data[i];})
 
 }
 
