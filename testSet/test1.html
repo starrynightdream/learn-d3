@@ -19,8 +19,10 @@ var links =
 {source: '艾伦·麦席森·图灵', target: '人工智能', 'rela': '主要成就', type: 'resolved'},
 {source: '艾伦·麦席森·图灵', target: '破解德国的著名密码系统Enigma', 'rela': '主要成就', type: 'resolved'},
 {source: '艾伦·麦席森·图灵', target: '《论数字计算在决断难题中的应用》', 'rela': '代表作品', type: 'resolved'},
-{source: '艾伦·麦席森·图灵', target: '《机器能思考吗？》', 'rela': '代表作品', type: 'resolved'},
+{source: '《机器能思考吗？》', target: '《论数字计算在决断难题中的应用》', 'rela': '代表作品', type: 'resolved'},
 ];
+
+const sglobal = {};
 
 var nodes = {};
 
@@ -45,11 +47,14 @@ var force = d3.layout.force()
     .on("tick", tick)
     .start();
 
+    // console.log(force)
+    // console.log(force.node)
+    // console.log(nodes)
 // 学解：添加svg版面
 var svg = d3.select("body").append("svg")
     .attr("width", width)
     .attr("height", height);
-
+console.log(svg)
 // 学解：做了箭头
 var marker=
     svg.append("marker")
@@ -118,7 +123,6 @@ var circle = svg.append("g").selectAll("circle")
     .on("click",function(node)
 	{
         edges_line.style("stroke-width",function(line){
-            console.log(line);
             if(line.source.name==node.name || line.target.name==node.name){
                 return 4;
             }else{
@@ -172,14 +176,15 @@ var text = svg.append("g").selectAll("text")
                 .text(function(){return bot;});
         }
     });
-
+sglobal.circle = circle;
+sglobal.edges_line = edges_line;
 // 学解： 更新函数
 function tick() {
-  circle.attr("transform", transform1);
+  sglobal.circle.attr("transform", transform1);
   text.attr("transform", transform2);
 
-  edges_line.attr('d', function(d) { 
-      var path='M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y;
+  sglobal.edges_line.attr('d', function(d) { 
+    //   var path='M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y;
       return linkArc(d);
   });  
     
