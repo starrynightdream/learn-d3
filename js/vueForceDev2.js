@@ -1,8 +1,8 @@
 /*
  * @Author: SND 
- * @Date: 2021-05-04 15:49:16 
- * @Last Modified by: SND
- * @Last Modified time: 2021-05-05 23:09:06
+ * @Date: 2021-05-05 22:47:32 
+ * @Last Modified by:   SND 
+ * @Last Modified time: 2021-05-05 22:47:32 
  */
 
 const testLinkData = [
@@ -46,14 +46,6 @@ const main = new Vue({
             this.sglobal.link
                 .attr('d', this.linkArc);
 
-            this.sglobal.cirText
-                .attr('x', d=>{return d.x;})
-                .attr('y', d=>{return d.y;});
-
-            this.sglobal.linkText
-                .attr('x', d=>{return (d.target.x + d.source.x)/2;})
-                .attr('y', d=>{return (d.target.y + d.source.y)/2;})
-
         },
         /**
          * 创建连接路径的函数
@@ -69,9 +61,7 @@ const main = new Vue({
         /**
          * 对园内的文字每帧施加的位移
          */
-        transformCirText : (d) =>{
-            return `translate(${d.x}, ${d.y})`;
-        },
+        transformCirText : (d) =>{},
         /**
          * 小圆位移 
          */
@@ -100,7 +90,6 @@ const main = new Vue({
                 const newData = {};
                 newData.source = _self.sglobal.nodes[ item.source] || (_self.sglobal.nodes[ item.source] = {name: item.source});
                 newData.target = _self.sglobal.nodes[ item.target] || (_self.sglobal.nodes[ item.target] = {name: item.target});
-                newData.reals = item.reals;
                 _self.sglobal.edges.push(newData);
             });
         }
@@ -194,33 +183,9 @@ const main = new Vue({
                     .on('dragstart', _self.dragstart)
             );
 
-        const cirText = svg.append('g')
-                .selectAll('text')
-                .data(force.nodes())
-                .enter()
-                .append('text')
-                .text(d=>{
-                    return d.name;
-                })
-                .attr('x', d=>{return d.x;})
-                .attr('y', d=>{return d.y;})
-        
-        const linkText = svg.append('g')
-                .selectAll('text')
-                .data(force.links())
-                .enter()
-                .append('text')
-                .text(d=>{
-                    return d.reals;
-                })
-                .attr('x', d=>{return (d.target.x + d.source.x)/2;})
-                .attr('y', d=>{return (d.target.y + d.source.y)/2;})
- 
         _self.sglobal.force = force;
         _self.sglobal.link = link;
         _self.sglobal.circle = circle;
-        _self.sglobal.cirText = cirText;
-        _self.sglobal.linkText = linkText;
     },
 });
 

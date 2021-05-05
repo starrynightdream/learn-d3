@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Vue Dev</title>
+        <meta charset="utf-8" />
+        <link type="text/css" rel="stylesheet" href="/css/svgPart.css" />
+
+        <script type="text/javascript" src="/node_modules/vue/dist/vue.js"></script>
+        <script type="text/javascript" src="/node_modules/vue-resource/dist/vue-resource.js"></script>
+        <script type="text/javascript" src="/node_modules/d3/dist/d3.js"></script>
+        <!-- <script type="text/javascript" src="/node_modules/d3-force/dist/d3-force.js"></script> -->
+
+        <!-- <script src="/js/d3.v3.min.js"></script> -->
+        <script type="text/javascript" src="/js/vueForceDev2.js"></script>
+    </head>
+    <body>
+        <div id="main" class="contain">
+            <div id="toolBar" class="topToolBar"></div>
+            <div id="search" class="mainBehaver">
+                <input type="text" name="searchText" id="searchText"
+                 class="rInput" @keydown.enter="getData(searchKey)" v-model='searchKey'/>
+            </div>
+            <div id="drawPath" class="mainShow"></div>
+        </div>
+    </body>
+</html>
