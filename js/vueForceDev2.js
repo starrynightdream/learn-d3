@@ -2,7 +2,7 @@
  * @Author: SND 
  * @Date: 2021-05-05 22:47:32 
  * @Last Modified by: SND
- * @Last Modified time: 2021-05-06 22:49:57
+ * @Last Modified time: 2021-05-06 23:11:36
  */
 
 const testLinkData = [
@@ -228,8 +228,7 @@ const main = new Vue({
             .attr('height', _self.height)
             .call(d3.zoom()
                 .on('zoom', (event) => {
-                    svg.selectAll('g')
-                    .attr('transform', 
+                    svg.attr('transform', 
                     event.transform);
                })
             );
