@@ -2,7 +2,7 @@
  * @Author: SND 
  * @Date: 2021-05-05 22:47:32 
  * @Last Modified by: SND
- * @Last Modified time: 2021-05-06 19:00:27
+ * @Last Modified time: 2021-05-06 19:34:33
  */
 
 const testLinkData = [
@@ -225,7 +225,13 @@ const main = new Vue({
 
         const svg = d3.select('#drawPath').append('svg')
             .attr('width', _self.width)
-            .attr('height', _self.height);
+            .attr('height', _self.height)
+            .call(d3.zoom()
+                .on('zoom', (event) => {
+                    svg.attr('transform', 
+                    event.transform);
+               })
+            );
  
         // 通用箭头遮罩
         svg.append('marker')
