@@ -2,31 +2,39 @@
  * @Author: SND 
  * @Date: 2021-05-05 22:47:32 
  * @Last Modified by: SND
- * @Last Modified time: 2021-05-06 11:27:40
+ * @Last Modified time: 2021-05-06 19:00:27
  */
 
 const testLinkData = [
-    {source: 1, target: 2, reals: 'num', type: 'test'},
-    {source: 1, target: 3, reals: 'num', type: 'test'},
-    {source: 1, target: 4, reals: 'num', type: 'test'},
-    {source: 1, target: 5, reals: 'num', type: 'test'},
-    {source: 1, target: 6, reals: 'num', type: 'test'},
-    {source: 1, target: 7, reals: 'num', type: 'test'},
-    {source: 1, target: 8, reals: 'num', type: 'test'},
-    {source: 1, target: 9, reals: 'num', type: 'test'},
-    {source: 1, target: 0, reals: 'num', type: 'test'},
+    [
+        {source: 1, target: 2, reals: 'num', type: 'test'},
+        {source: 1, target: 3, reals: 'num', type: 'test'},
+        {source: 1, target: 4, reals: 'num', type: 'test'},
+        {source: 1, target: 5, reals: 'num', type: 'test'},
+        {source: 1, target: 6, reals: 'num', type: 'test'},
+        {source: 1, target: 7, reals: 'num', type: 'test'},
+        {source: 1, target: 8, reals: 'num', type: 'test'},
+        {source: 1, target: 9, reals: 'num', type: 'test'},
+        {source: 1, target: 0, reals: 'num', type: 'test'},
+    ],
+    [
+        {source: 0, target: -1, reals: 'num', type: 'test'},
+        {source: 0, target: -2, reals: 'num', type: 'test'},
+        {source: 0, target: -3, reals: 'num', type: 'test'},
+        {source: 0, target: -4, reals: 'num', type: 'test'},
+        {source: 0, target: -5, reals: 'num', type: 'test'},
+    ],
+    [
+        {source: 0, target: 4, reals: 'num', type: 'test'},
+        {source: 1, target: 2, reals: 'num', type: 'test'},
+        {source: 2, target: 4, reals: 'num', type: 'test'},
+    ]
 ]
 
-const addingTextData = [
-    {source: 0, target: -1, reals: 'num', type: 'test'},
-    {source: 0, target: -2, reals: 'num', type: 'test'},
-    {source: 0, target: -3, reals: 'num', type: 'test'},
-    {source: 0, target: -4, reals: 'num', type: 'test'},
-    {source: 0, target: -5, reals: 'num', type: 'test'},
-]
 
 // setting param
-const cirR = 10;
+const cirR = 12;
+const forceStreng = -300;
 
 // const sglobal = {};
 window.onload = () =>{
@@ -53,6 +61,13 @@ const main = new Vue({
             this.sglobal.link
                 .attr('d', this.linkArc);
 
+            this.sglobal.cirText
+                .attr('x', d=>{return d.x;})
+                .attr('y', d=>{return d.y;});
+            
+            this.sglobal.linkText
+                .attr('x', d=>{return (d.source.x + d.target.x)/2;})
+                .attr('y', d=>{return (d.source.y + d.target.y)/2;})
         },
         /**
          * 创建连接路径的函数
@@ -78,10 +93,17 @@ const main = new Vue({
         /**
          * 拖动开始的触发函数 
          */
-        dragstart :  function (d){
+        dragStart :  function (d){
             d.fixed = true;
-            d.fx = d.x;
-            d.fy = d.y;
+        },
+        /**
+         * 拖动计算 
+         */
+        draged : function(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+            // 重启以适用新值， 否则会出现计算终止
+            this.sglobal.force.alpha(0.1).restart();
         },
 
         /**
@@ -94,17 +116,101 @@ const main = new Vue({
                 _self.sglobal.nodes = {};
                 _self.sglobal.edges = [];
             }
-            let data;
-            if (key == '123')
-                data = testLinkData;
-            else
-                data = addingTextData;
+
+            // TODO: 从后台获取数据
+            let data = testLinkData[key % testLinkData.length];
             data.forEach((item)=>{
                 const newData = {};
                 newData.source = _self.sglobal.nodes[ item.source] || (_self.sglobal.nodes[ item.source] = {name: item.source});
                 newData.target = _self.sglobal.nodes[ item.target] || (_self.sglobal.nodes[ item.target] = {name: item.target});
+                newData.reals = item.reals;
                 _self.sglobal.edges.push(newData);
             });
+
+            if (_self.sglobal.force){
+                _self.reDraw();
+            }
+            
+        },
+
+        /**
+         * 重新绘制界面
+         */
+        reDraw: function (){
+            const _self = this;
+            const svg = _self.sglobal.svg;
+            svg.selectAll('g').remove();
+            const force = d3.forceSimulation( Object.values( _self.sglobal.nodes))
+                .force('link', d3.forceLink(_self.sglobal.edges).distance(cirR * 8))
+                .force('charge', d3.forceManyBody().strength(forceStreng))
+                .force('center', d3.forceCenter(_self.width/2, _self.height/2))
+                .on('tick', _self.tick);
+        
+            const drag = 
+                d3.drag()
+                    .on('start', _self.dragStart)
+                    .on('drag', _self.draged)
+                    .on('end', null);
+           
+            // 线
+            const link = svg.append('g')
+                .selectAll('.edgePath')
+                .data(_self.sglobal.edges)
+                .enter()
+                .append('path')
+                .style("stroke-width",0.5)
+                .attr("marker-end", "url(#resolved)" )
+                .attr('d', (d) =>{return 'M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y})
+                .attr('class', 'edgePath')
+                .attr('id', (d, i)=>{return 'edgepath'+i;})
+
+            // 点
+            const circle = svg.append('g')
+                .selectAll('circle')
+                .data( Object.values( _self.sglobal.nodes))
+                .enter()
+                .append('circle')
+                .attr("r", cirR)
+                .style('fill', node=>{
+                    // TODO: corcle setting
+                    let color= d3.hsl(Math.random() * 2 * 360, 0.6, 0.5);
+                    return color;
+                })
+                .style('stroke',(node) =>{ 
+                    let color;
+                    color='#A254A2';
+                    return color;
+                })
+                .style('pointer-events', 'visible')
+                .on('click', (node) =>{
+                    // TODO: click event 如果有则显示细节信息
+                })
+                .call(drag);
+
+            const linkText = svg.append('g')
+                .selectAll('text')
+                .data(_self.sglobal.edges)
+                .enter()
+                .append('text')
+                .attr('x', d=>{return (d.source.x + d.target.x)/2;})
+                .attr('y', d=>{return (d.source.y + d.target.y)/2;})
+                .text(d=>{return d.reals;})
+        
+            const cirText = svg.append('g')
+                .selectAll('text')
+                .data( Object.values( _self.sglobal.nodes))
+                .enter()
+                .append('text')
+                .attr('x', d=>{return d.x;})
+                .attr('y', d=>{return d.y;})
+                .text(d=>{return d.name;})
+
+            _self.sglobal.force = force;
+            _self.sglobal.drag = drag;
+            _self.sglobal.link = link;
+            _self.sglobal.circle = circle;
+            _self.sglobal.cirText = cirText;
+            _self.sglobal.linkText = linkText;
         }
     },
     mounted: function() {
@@ -115,7 +221,7 @@ const main = new Vue({
 
         // 获取默认数据
         // TODO： 根据url中的key进行默认值的变更
-        this.getData("123", true);
+        _self.getData(12, true);
 
         const svg = d3.select('#drawPath').append('svg')
             .attr('width', _self.width)
@@ -136,60 +242,15 @@ const main = new Vue({
             .attr("d", "M 0,-5 L 10,0 L 0,5")
             .attr('fill','#000000');
 
+        // TODO 初始化位置信息，最好有一个较好的初始位置
         for (let key in _self.sglobal.nodes) {
             _self.sglobal.nodes[key].x = _self.width / 2;
             _self.sglobal.nodes[key].y = _self.height / 2;
         }
 
+        _self.sglobal.svg = svg;
 
-        const force = d3.forceSimulation( Object.values( _self.sglobal.nodes))
-            .force('link', d3.forceLink(_self.sglobal.edges).distance(cirR * 8))
-            .force('charge', d3.forceManyBody().strength(-980))
-            .force('center', d3.forceCenter(_self.width/2, _self.height/2))
-            .on('tick', _self.tick);
-           
-        // 线
-        const link = svg.append('g')
-            .selectAll('.edgePath')
-            .data(_self.sglobal.edges)
-            .enter()
-            .append('path')
-            .style("stroke-width",0.5)
-            .attr("marker-end", "url(#resolved)" )
-            .attr('d', (d) =>{return 'M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y})
-            .attr('class', 'edgePath')
-            .attr('id', (d, i)=>{return 'edgepath'+i;})
-
-        // 点
-        const circle = svg.append('g')
-            .selectAll('circle')
-            .data( Object.values( _self.sglobal.nodes))
-            .enter()
-            .append('circle')
-            .attr("r", cirR)
-            .style('fill', node=>{
-                // TODO: corcle setting
-                let color='#222222';
-                return color;
-            })
-            .style('stroke',(node) =>{ 
-                let color;
-                color='#A254A2';
-                return color;
-            })
-            .style('pointer-events', 'visible')
-            .on('click', (node) =>{
-                // TODO: click event
-                _self.getData('add');
-            })
-            .call(
-                d3.drag()
-                    .on('start', _self.dragstart)
-            );
-
-        _self.sglobal.force = force;
-        _self.sglobal.link = link;
-        _self.sglobal.circle = circle;
+        _self.reDraw();
     },
 });
 
