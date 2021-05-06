@@ -1,8 +1,8 @@
 /*
  * @Author: SND 
  * @Date: 2021-05-05 22:47:32 
- * @Last Modified by:   SND 
- * @Last Modified time: 2021-05-05 22:47:32 
+ * @Last Modified by: SND
+ * @Last Modified time: 2021-05-06 11:27:40
  */
 
 const testLinkData = [
@@ -15,7 +15,14 @@ const testLinkData = [
     {source: 1, target: 8, reals: 'num', type: 'test'},
     {source: 1, target: 9, reals: 'num', type: 'test'},
     {source: 1, target: 0, reals: 'num', type: 'test'},
+]
+
+const addingTextData = [
     {source: 0, target: -1, reals: 'num', type: 'test'},
+    {source: 0, target: -2, reals: 'num', type: 'test'},
+    {source: 0, target: -3, reals: 'num', type: 'test'},
+    {source: 0, target: -4, reals: 'num', type: 'test'},
+    {source: 0, target: -5, reals: 'num', type: 'test'},
 ]
 
 // setting param
@@ -73,6 +80,8 @@ const main = new Vue({
          */
         dragstart :  function (d){
             d.fixed = true;
+            d.fx = d.x;
+            d.fy = d.y;
         },
 
         /**
@@ -85,7 +94,11 @@ const main = new Vue({
                 _self.sglobal.nodes = {};
                 _self.sglobal.edges = [];
             }
-            const data = testLinkData;
+            let data;
+            if (key == '123')
+                data = testLinkData;
+            else
+                data = addingTextData;
             data.forEach((item)=>{
                 const newData = {};
                 newData.source = _self.sglobal.nodes[ item.source] || (_self.sglobal.nodes[ item.source] = {name: item.source});
@@ -124,63 +137,54 @@ const main = new Vue({
             .attr('fill','#000000');
 
         for (let key in _self.sglobal.nodes) {
-            // console.log(_self.width, _self.height)
             _self.sglobal.nodes[key].x = _self.width / 2;
             _self.sglobal.nodes[key].y = _self.height / 2;
-            // console.log(_self.sglobal.nodes[key].x, _self.sglobal.nodes[key].y)
         }
 
-        // console.log(d3.values(_self.sglobal.nodes));
 
-        const force = d3.layout.force()
-            .nodes( d3.values(_self.sglobal.nodes))
-            .links(_self.sglobal.edges)
-            .size([_self.width, _self.height])
-            .linkDistance(cirR * 8)
-            .charge(-980)
-            .on('tick', _self.tick)
-            .start();  
+        const force = d3.forceSimulation( Object.values( _self.sglobal.nodes))
+            .force('link', d3.forceLink(_self.sglobal.edges).distance(cirR * 8))
+            .force('charge', d3.forceManyBody().strength(-980))
+            .force('center', d3.forceCenter(_self.width/2, _self.height/2))
+            .on('tick', _self.tick);
            
         // 线
         const link = svg.append('g')
             .selectAll('.edgePath')
-            .data(force.links())
+            .data(_self.sglobal.edges)
             .enter()
             .append('path')
-            .attr({
-                'd': (d) =>{return 'M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y},
-                'class':'edgePath',
-                'id':(d,i) =>{return 'edgepath'+i;}
-            })
-            .style("pointer-events", "none")
             .style("stroke-width",0.5)
-            .attr("marker-end", "url(#resolved)" );
-            
+            .attr("marker-end", "url(#resolved)" )
+            .attr('d', (d) =>{return 'M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y})
+            .attr('class', 'edgePath')
+            .attr('id', (d, i)=>{return 'edgepath'+i;})
+
         // 点
         const circle = svg.append('g')
             .selectAll('circle')
-            .data(force.nodes())
+            .data( Object.values( _self.sglobal.nodes))
             .enter()
-            .append("circle")
+            .append('circle')
             .attr("r", cirR)
-            .style("fill", node=>{
+            .style('fill', node=>{
                 // TODO: corcle setting
-                let color="#222222";
+                let color='#222222';
                 return color;
             })
             .style('stroke',(node) =>{ 
                 let color;
-                color="#A254A2";
+                color='#A254A2';
                 return color;
             })
             .style('pointer-events', 'visible')
-            .on("click", (node) =>{
+            .on('click', (node) =>{
                 // TODO: click event
-                console.log(node);
+                _self.getData('add');
             })
             .call(
-                force.drag()
-                    .on('dragstart', _self.dragstart)
+                d3.drag()
+                    .on('start', _self.dragstart)
             );
 
         _self.sglobal.force = force;

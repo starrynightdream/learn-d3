@@ -2,7 +2,7 @@
  * @Author: SND 
  * @Date: 2021-05-04 15:49:16 
  * @Last Modified by: SND
- * @Last Modified time: 2021-05-05 23:09:06
+ * @Last Modified time: 2021-05-06 11:25:31
  */
 
 const testLinkData = [
@@ -15,9 +15,15 @@ const testLinkData = [
     {source: 1, target: 8, reals: 'num', type: 'test'},
     {source: 1, target: 9, reals: 'num', type: 'test'},
     {source: 1, target: 0, reals: 'num', type: 'test'},
-    {source: 0, target: -1, reals: 'num', type: 'test'},
 ]
 
+const addingTextData = [
+    {source: 0, target: -1, reals: 'num', type: 'test'},
+    {source: 0, target: -2, reals: 'num', type: 'test'},
+    {source: 0, target: -3, reals: 'num', type: 'test'},
+    {source: 0, target: -4, reals: 'num', type: 'test'},
+    {source: 0, target: -5, reals: 'num', type: 'test'},
+]
 // setting param
 const cirR = 10;
 
@@ -95,7 +101,12 @@ const main = new Vue({
                 _self.sglobal.nodes = {};
                 _self.sglobal.edges = [];
             }
-            const data = testLinkData;
+            let data;
+            if (key == '123')
+                data = testLinkData;
+            else
+                data = addingTextData;
+
             data.forEach((item)=>{
                 const newData = {};
                 newData.source = _self.sglobal.nodes[ item.source] || (_self.sglobal.nodes[ item.source] = {name: item.source});
@@ -103,6 +114,18 @@ const main = new Vue({
                 newData.reals = item.reals;
                 _self.sglobal.edges.push(newData);
             });
+
+            
+            if (_self.sglobal.force){
+                _self.sglobal.force.stop();
+                _self.sglobal.force.nodes(_self.sglobal.nodes);
+                _self.sglobal.force.links(_self.sglobal.edges);
+                _self.sglobal.force.start();
+            }
+
+            console.log(_self.sglobal.nodes)
+            console.log(_self.sglobal.edges)
+
         }
     },
     mounted: function() {
@@ -135,13 +158,9 @@ const main = new Vue({
             .attr('fill','#000000');
 
         for (let key in _self.sglobal.nodes) {
-            // console.log(_self.width, _self.height)
             _self.sglobal.nodes[key].x = _self.width / 2;
             _self.sglobal.nodes[key].y = _self.height / 2;
-            // console.log(_self.sglobal.nodes[key].x, _self.sglobal.nodes[key].y)
         }
-
-        // console.log(d3.values(_self.sglobal.nodes));
 
         const force = d3.layout.force()
             .nodes( d3.values(_self.sglobal.nodes))
@@ -187,7 +206,7 @@ const main = new Vue({
             .style('pointer-events', 'visible')
             .on("click", (node) =>{
                 // TODO: click event
-                console.log(node);
+                // _self.getData('test')
             })
             .call(
                 force.drag()
