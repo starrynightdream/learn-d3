@@ -2,7 +2,7 @@
  * @Author: SND 
  * @Date: 2021-05-05 22:47:32 
  * @Last Modified by: SND
- * @Last Modified time: 2021-05-06 23:11:36
+ * @Last Modified time: 2021-05-08 16:16:03
  */
 
 const testLinkData = [
@@ -127,10 +127,84 @@ const main = new Vue({
                 _self.sglobal.edges.push(newData);
             });
 
-            if (_self.sglobal.force){
+            if (needClear && _self.sglobal.force){
                 _self.reDraw();
+            } else if (_self.sglobal.force) {
+                _self.addNode();
+                console.log('add')
             }
             
+        },
+        addNode: function() {
+            const _self = this;
+            const svg = _self.sglobal.svg;
+            const force = _self.sglobal.force;
+            const drag = _self.sglobal.drag;
+
+            const link = _self.sglobal.link;
+            const circle = _self.sglobal.circle;
+            const linkText = _self.sglobal.linkText;
+            const cirText = _self.sglobal.cirText;
+
+            force.nodes( Object.values(_self.sglobal.nodes));
+            force.force('link').links(_self.sglobal.edges);
+            force.alpha(0.1).restart();
+
+            // 重新更具各个数据绘制节点
+            svg.select('#linkG').selectAll('path')
+                .data(_self.sglobal.edges)
+                .enter()
+                .append('path')
+                .style("stroke-width",0.5)
+                .attr("marker-end", "url(#resolved)" )
+                .attr('d', (d) =>{return 'M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y})
+                .attr('class', 'edgePath')
+                .attr('id', (d, i)=>{return 'edgepath'+i;})
+            
+            _self.sglobal.link = svg.selectAll('.edgePath');
+
+            svg.select('#circleG').selectAll('circle')
+                .data(Object.values(_self.sglobal.nodes), (d)=>{return d.name;})
+                .enter()
+                .append('circle')
+                .attr('r', cirR)
+                .style('fill', node=>{
+                    return d3.hsl(Math.random() * 2 * 360, 0.6, 0.5);
+                })
+                // .style('stroke',(node) =>{ 
+                //     let color;
+                //     color='#A254A2';
+                //     return color;
+                // })
+                .style('pointer-events', 'visible')
+                .on('click', function(node) {
+                    // TODO: click event 如果有则显示细节信息
+                })
+                .on('dblclick', function (e) {
+                    // TODO: click event 添加新节点
+                    _self.getData(1, false);
+                })
+                .call(drag);
+            _self.sglobal.circle = svg.select('#circleG').selectAll('circle');
+
+            svg.select('#linkTextG').selectAll('text')
+                .data(_self.sglobal.edges)
+                .enter()
+                .append('text')
+                .attr('x', d=>{return (d.source.x + d.target.x)/2;})
+                .attr('y', d=>{return (d.source.y + d.target.y)/2;})
+                .style('fill', 'rgb(255, 255, 255)')
+                .text(d=>{return d.reals;})
+            _self.sglobal.linkText = svg.select('#linkTextG').selectAll('text');
+            
+            svg.select('#cirTextG').selectAll('text')
+                .data( Object.values( _self.sglobal.nodes))
+                .enter()
+                .append('text')
+                .attr('x', d=>{return d.x;})
+                .attr('y', d=>{return d.y;})
+                .text(d=>{return d.name;})
+            _self.sglobal.cirText = svg.select('#cirTextG').selectAll('text');
         },
 
         /**
@@ -154,6 +228,7 @@ const main = new Vue({
            
             // 线
             const link = svg.append('g')
+                .attr('id', 'linkG')
                 .selectAll('.edgePath')
                 .data(_self.sglobal.edges)
                 .enter()
@@ -166,37 +241,44 @@ const main = new Vue({
 
             // 点
             const circle = svg.append('g')
+                .attr('id', 'circleG')
                 .selectAll('circle')
                 .data( Object.values( _self.sglobal.nodes))
                 .enter()
                 .append('circle')
                 .attr("r", cirR)
                 .style('fill', node=>{
-                    // TODO: corcle setting
-                    let color= d3.hsl(Math.random() * 2 * 360, 0.6, 0.5);
-                    return color;
+                    return d3.hsl(Math.random() * 2 * 360, 0.6, 0.5);
                 })
-                .style('stroke',(node) =>{ 
-                    let color;
-                    color='#A254A2';
-                    return color;
-                })
+                // .style('stroke',(node) =>{ 
+                //     let color;
+                //     color='#A254A2';
+                //     return color;
+                // })
                 .style('pointer-events', 'visible')
-                .on('click', (node) =>{
+                .on('click', function(node) {
                     // TODO: click event 如果有则显示细节信息
+                })
+                .on('dblclick', function (e) {
+                    // TODO: click event 添加新节点
+                    // e.target.style.fill = 'rgb(255,255,255)'
+                    _self.getData(1, false);
                 })
                 .call(drag);
 
             const linkText = svg.append('g')
+                .attr('id', 'linkTextG')
                 .selectAll('text')
                 .data(_self.sglobal.edges)
                 .enter()
                 .append('text')
                 .attr('x', d=>{return (d.source.x + d.target.x)/2;})
                 .attr('y', d=>{return (d.source.y + d.target.y)/2;})
+                .style('fill', 'rgb(255, 255, 255)')
                 .text(d=>{return d.reals;})
         
             const cirText = svg.append('g')
+                .attr('id', 'cirTextG')
                 .selectAll('text')
                 .data( Object.values( _self.sglobal.nodes))
                 .enter()
@@ -223,15 +305,17 @@ const main = new Vue({
         // TODO： 根据url中的key进行默认值的变更
         _self.getData(12, true);
 
+        // 创建svg 版面
         const svg = d3.select('#drawPath').append('svg')
             .attr('width', _self.width)
             .attr('height', _self.height)
             .call(d3.zoom()
                 .on('zoom', (event) => {
-                    svg.attr('transform', 
-                    event.transform);
+                    svg.selectAll('g')
+                    .attr('transform', event.transform);
                })
-            );
+            )
+            .on('dblclick.zoom', null);
  
         // 通用箭头遮罩
         svg.append('marker')

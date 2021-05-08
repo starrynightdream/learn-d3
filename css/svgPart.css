@@ -1,6 +1,6 @@
-circle:hover{
+/* circle:hover{
     stroke-width: 2px;
-}
+} */
 
 body{
     /* display: flex; */
@@ -56,4 +56,8 @@ body{
 
 .edgePath {
     stroke: white;
+}
+
+.circle {
+    border: none;
 }
