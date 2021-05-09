@@ -2,7 +2,7 @@
  * @Author: SND 
  * @Date: 2021-05-05 22:47:32 
  * @Last Modified by: SND
- * @Last Modified time: 2021-05-08 16:16:03
+ * @Last Modified time: 2021-05-09 10:15:04
  */
 
 const testLinkData = [
@@ -105,6 +105,67 @@ const main = new Vue({
             // 重启以适用新值， 否则会出现计算终止
             this.sglobal.force.alpha(0.1).restart();
         },
+        // 线的绘制函数
+        linkDraw :(_self, data, rootNode)=>{
+
+            return rootNode.selectAll('path')
+                .data(data)
+                .enter()
+                .append('path')
+                .style("stroke-width",0.5)
+                .attr("marker-end", "url(#resolved)" )
+                .attr('d', (d) =>{return 'M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y})
+                .attr('class', 'edgePath')
+                .attr('id', (d, i)=>{return 'edgepath'+i;});
+        },
+        // 圆的绘制函数
+        cirDraw : (_self, data, rootNode)=>{
+
+            return rootNode.selectAll('circle')
+                .data(data)
+                .enter()
+                .append('circle')
+                .attr('r', cirR)
+                .style('fill', node=>{
+                    return d3.hsl(Math.random() * 2 * 360, 0.6, 0.5);
+                })
+                // .style('stroke',(node) =>{ 
+                //     let color;
+                //     color='#A254A2';
+                //     return color;
+                // })
+                .style('pointer-events', 'visible')
+                .on('click', function(node) {
+                    // TODO: click event 如果有则显示细节信息
+
+                })
+                .on('dblclick', function (e) {
+                    // TODO: click event 添加新节点
+                    _self.getData(1, false);
+                })
+                .call(_self.sglobal.drag);
+        },
+        linkTextDraw : (_self, data, rootNode) =>{
+
+            return rootNode.selectAll('text')
+                .data(data)
+                .enter()
+                .append('text')
+                .attr('x', d=>{return (d.source.x + d.target.x)/2;})
+                .attr('y', d=>{return (d.source.y + d.target.y)/2;})
+                .style('fill', 'rgb(255, 255, 255)')
+                .text(d=>{return d.reals;})
+        },
+        cirTextDraw : (_self, data, rootNode) =>{
+
+            return rootNode.selectAll('text')
+                .data(data)
+                .enter()
+                .append('text')
+                .attr('x', d=>{return d.x;})
+                .attr('y', d=>{return d.y;})
+                .text(d=>{return d.name;})
+        },
 
         /**
          * 根据key查找数据并更新
@@ -131,7 +192,6 @@ const main = new Vue({
                 _self.reDraw();
             } else if (_self.sglobal.force) {
                 _self.addNode();
-                console.log('add')
             }
             
         },
@@ -150,60 +210,68 @@ const main = new Vue({
             force.force('link').links(_self.sglobal.edges);
             force.alpha(0.1).restart();
 
-            // 重新更具各个数据绘制节点
-            svg.select('#linkG').selectAll('path')
-                .data(_self.sglobal.edges)
-                .enter()
-                .append('path')
-                .style("stroke-width",0.5)
-                .attr("marker-end", "url(#resolved)" )
-                .attr('d', (d) =>{return 'M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y})
-                .attr('class', 'edgePath')
-                .attr('id', (d, i)=>{return 'edgepath'+i;})
+            // 重新更具各个数据绘制
+            // svg.select('#linkG').selectAll('path')
+            //     .data(_self.sglobal.edges)
+            //     .enter()
+            //     .append('path')
+            //     .style("stroke-width",0.5)
+            //     .attr("marker-end", "url(#resolved)" )
+            //     .attr('d', (d) =>{return 'M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y})
+            //     .attr('class', 'edgePath')
+            //     .attr('id', (d, i)=>{return 'edgepath'+i;})
             
+            _self.linkDraw(_self, _self.sglobal.edges, svg.select('#linkG'));
             _self.sglobal.link = svg.selectAll('.edgePath');
 
-            svg.select('#circleG').selectAll('circle')
-                .data(Object.values(_self.sglobal.nodes), (d)=>{return d.name;})
-                .enter()
-                .append('circle')
-                .attr('r', cirR)
-                .style('fill', node=>{
-                    return d3.hsl(Math.random() * 2 * 360, 0.6, 0.5);
-                })
-                // .style('stroke',(node) =>{ 
-                //     let color;
-                //     color='#A254A2';
-                //     return color;
-                // })
-                .style('pointer-events', 'visible')
-                .on('click', function(node) {
-                    // TODO: click event 如果有则显示细节信息
-                })
-                .on('dblclick', function (e) {
-                    // TODO: click event 添加新节点
-                    _self.getData(1, false);
-                })
-                .call(drag);
+            // svg.select('#circleG').selectAll('circle')
+            //     .data(Object.values(_self.sglobal.nodes), (d)=>{return d.name;})
+            //     .enter()
+            //     .append('circle')
+            //     .attr('r', cirR)
+            //     .style('fill', node=>{
+            //         return d3.hsl(Math.random() * 2 * 360, 0.6, 0.5);
+            //     })
+            //     // .style('stroke',(node) =>{ 
+            //     //     let color;
+            //     //     color='#A254A2';
+            //     //     return color;
+            //     // })
+            //     .style('pointer-events', 'visible')
+            //     .on('click', function(node) {
+            //         // TODO: click event 如果有则显示细节信息
+
+            //     })
+            //     .on('dblclick', function (e) {
+            //         // TODO: click event 添加新节点
+            //         _self.getData(1, false);
+            //     })
+            //     .call(drag);
+
+            _self.cirDraw(_self, Object.values(_self.sglobal.nodes), svg.select('#circleG'));
             _self.sglobal.circle = svg.select('#circleG').selectAll('circle');
 
-            svg.select('#linkTextG').selectAll('text')
-                .data(_self.sglobal.edges)
-                .enter()
-                .append('text')
-                .attr('x', d=>{return (d.source.x + d.target.x)/2;})
-                .attr('y', d=>{return (d.source.y + d.target.y)/2;})
-                .style('fill', 'rgb(255, 255, 255)')
-                .text(d=>{return d.reals;})
+            // svg.select('#linkTextG').selectAll('text')
+            //     .data(_self.sglobal.edges)
+            //     .enter()
+            //     .append('text')
+            //     .attr('x', d=>{return (d.source.x + d.target.x)/2;})
+            //     .attr('y', d=>{return (d.source.y + d.target.y)/2;})
+            //     .style('fill', 'rgb(255, 255, 255)')
+            //     .text(d=>{return d.reals;})
+
+            _self.linkTextDraw(_self, _self.sglobal.edges, svg.select('#linkTextG'));
             _self.sglobal.linkText = svg.select('#linkTextG').selectAll('text');
             
-            svg.select('#cirTextG').selectAll('text')
-                .data( Object.values( _self.sglobal.nodes))
-                .enter()
-                .append('text')
-                .attr('x', d=>{return d.x;})
-                .attr('y', d=>{return d.y;})
-                .text(d=>{return d.name;})
+            // svg.select('#cirTextG').selectAll('text')
+            //     .data( Object.values( _self.sglobal.nodes))
+            //     .enter()
+            //     .append('text')
+            //     .attr('x', d=>{return d.x;})
+            //     .attr('y', d=>{return d.y;})
+            //     .text(d=>{return d.name;})
+
+            _self.cirTextDraw(_self, Object.values( _self.sglobal.nodes), svg.select('#cirTextG'));
             _self.sglobal.cirText = svg.select('#cirTextG').selectAll('text');
         },
 
@@ -214,11 +282,14 @@ const main = new Vue({
             const _self = this;
             const svg = _self.sglobal.svg;
             svg.selectAll('g').remove();
+
             const force = d3.forceSimulation( Object.values( _self.sglobal.nodes))
                 .force('link', d3.forceLink(_self.sglobal.edges).distance(cirR * 8))
                 .force('charge', d3.forceManyBody().strength(forceStreng))
                 .force('center', d3.forceCenter(_self.width/2, _self.height/2))
                 .on('tick', _self.tick);
+
+            _self.sglobal.force = force;
         
             const drag = 
                 d3.drag()
@@ -226,73 +297,85 @@ const main = new Vue({
                     .on('drag', _self.draged)
                     .on('end', null);
            
+            _self.sglobal.drag = drag;
+
             // 线
-            const link = svg.append('g')
-                .attr('id', 'linkG')
-                .selectAll('.edgePath')
-                .data(_self.sglobal.edges)
-                .enter()
-                .append('path')
-                .style("stroke-width",0.5)
-                .attr("marker-end", "url(#resolved)" )
-                .attr('d', (d) =>{return 'M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y})
-                .attr('class', 'edgePath')
-                .attr('id', (d, i)=>{return 'edgepath'+i;})
+            // const link = svg.append('g')
+            //     .attr('id', 'linkG')
+            //     .selectAll('.edgePath')
+            //     .data(_self.sglobal.edges)
+            //     .enter()
+            //     .append('path')
+            //     .style("stroke-width",0.5)
+            //     .attr("marker-end", "url(#resolved)" )
+            //     .attr('d', (d) =>{return 'M '+d.source.x+' '+d.source.y+' L '+ d.target.x +' '+d.target.y})
+            //     .attr('class', 'edgePath')
+            //     .attr('id', (d, i)=>{return 'edgepath'+i;})
+            
+            const link = _self.linkDraw(_self, _self.sglobal.edges, 
+                svg.append('g').attr('id', 'linkG'));
+
+            _self.sglobal.link = link;
 
             // 点
-            const circle = svg.append('g')
-                .attr('id', 'circleG')
-                .selectAll('circle')
-                .data( Object.values( _self.sglobal.nodes))
-                .enter()
-                .append('circle')
-                .attr("r", cirR)
-                .style('fill', node=>{
-                    return d3.hsl(Math.random() * 2 * 360, 0.6, 0.5);
-                })
-                // .style('stroke',(node) =>{ 
-                //     let color;
-                //     color='#A254A2';
-                //     return color;
-                // })
-                .style('pointer-events', 'visible')
-                .on('click', function(node) {
-                    // TODO: click event 如果有则显示细节信息
-                })
-                .on('dblclick', function (e) {
-                    // TODO: click event 添加新节点
-                    // e.target.style.fill = 'rgb(255,255,255)'
-                    _self.getData(1, false);
-                })
-                .call(drag);
+            // const circle = svg.append('g')
+            //     .attr('id', 'circleG')
+            //     .selectAll('circle')
+            //     .data( Object.values( _self.sglobal.nodes))
+            //     .enter()
+            //     .append('circle')
+            //     .attr("r", cirR)
+            //     .style('fill', node=>{
+            //         return d3.hsl(Math.random() * 2 * 360, 0.6, 0.5);
+            //     })
+            //     // .style('stroke',(node) =>{ 
+            //     //     let color;
+            //     //     color='#A254A2';
+            //     //     return color;
+            //     // })
+            //     .style('pointer-events', 'visible')
+            //     .on('click', function(node) {
+            //         // TODO: click event 如果有则显示细节信息
+            //     })
+            //     .on('dblclick', function (e) {
+            //         // e.target.style.fill = 'rgb(255,255,255)'
+            //         _self.getData(1, false);
+            //     })
+            //     .call(drag);
 
-            const linkText = svg.append('g')
-                .attr('id', 'linkTextG')
-                .selectAll('text')
-                .data(_self.sglobal.edges)
-                .enter()
-                .append('text')
-                .attr('x', d=>{return (d.source.x + d.target.x)/2;})
-                .attr('y', d=>{return (d.source.y + d.target.y)/2;})
-                .style('fill', 'rgb(255, 255, 255)')
-                .text(d=>{return d.reals;})
-        
-            const cirText = svg.append('g')
-                .attr('id', 'cirTextG')
-                .selectAll('text')
-                .data( Object.values( _self.sglobal.nodes))
-                .enter()
-                .append('text')
-                .attr('x', d=>{return d.x;})
-                .attr('y', d=>{return d.y;})
-                .text(d=>{return d.name;})
+            const circle = _self.cirDraw(_self, Object.values( _self.sglobal.nodes), 
+                svg.append('g').attr('id', 'circleG'));
 
-            _self.sglobal.force = force;
-            _self.sglobal.drag = drag;
-            _self.sglobal.link = link;
             _self.sglobal.circle = circle;
-            _self.sglobal.cirText = cirText;
+
+            // const linkText = svg.append('g')
+            //     .attr('id', 'linkTextG')
+            //     .selectAll('text')
+            //     .data(_self.sglobal.edges)
+            //     .enter()
+            //     .append('text')
+            //     .attr('x', d=>{return (d.source.x + d.target.x)/2;})
+            //     .attr('y', d=>{return (d.source.y + d.target.y)/2;})
+            //     .style('fill', 'rgb(255, 255, 255)')
+            //     .text(d=>{return d.reals;})
+            
+            const linkText = _self.linkTextDraw(_self, _self.sglobal.edges, 
+                svg.append('g').attr('id', 'linkTextG'));
             _self.sglobal.linkText = linkText;
+
+            // const cirText = svg.append('g')
+            //     .attr('id', 'cirTextG')
+            //     .selectAll('text')
+            //     .data( Object.values( _self.sglobal.nodes))
+            //     .enter()
+            //     .append('text')
+            //     .attr('x', d=>{return d.x;})
+            //     .attr('y', d=>{return d.y;})
+            //     .text(d=>{return d.name;})
+
+            const cirText = _self.cirTextDraw(_self, Object.values( _self.sglobal.nodes), 
+                svg.append('g').attr('id', 'cirTextG'));
+            _self.sglobal.cirText = cirText;
         }
     },
     mounted: function() {
@@ -331,6 +414,7 @@ const main = new Vue({
             .append("path")
             .attr("d", "M 0,-5 L 10,0 L 0,5")
             .attr('fill','#000000');
+        
 
         // TODO 初始化位置信息，最好有一个较好的初始位置
         for (let key in _self.sglobal.nodes) {
@@ -341,6 +425,22 @@ const main = new Vue({
         _self.sglobal.svg = svg;
 
         _self.reDraw();
+        
+        const shower = svg.append('rect')
+            .attr('id', 'infoShower')
+            .attr('x', 10)
+            .attr('y', 10)
+            .attr('width', (d)=>{return _self.width - 20})
+            .attr('height', (d)=>{return _self.height - 20})
+            .attr('fill', (d)=>{return d3.hsl(270, 0.7, 0.5)})
+            .on('click', ()=>{
+
+                shower.transition(d3.transition().duration(2000))
+                    .attr('fill', (d)=>{return d3.hsl(270, 0.3, 0.5)})
+                    .attr('height', 0);
+            })
+        
+        _self.sglobal.shower = shower;
     },
 });
 
